@@ -36,10 +36,43 @@ function App() {
         })
     }
 
+        //     <div className="bg-gray-200 h-screen overflow-y-auto py-2">
+        //     <Reader />
+        // </div>
+
 
     return (
-        <div className="bg-gray-200 h-screen overflow-y-auto py-2">
-            <Reader />
+        <div className="app">
+            <h1>PySide6 + React + QWebChannel</h1>
+            <p className="status">
+                {ready ? '🟢 connected to Python' : '🟡 waiting for bridge...'}
+            </p>
+            {sysInfo && <p className="sysinfo">System: {sysInfo}</p>}
+
+            <div>
+                <input
+                    value={filepath}
+                    onChange={(e) => setFilepath(e.target.value)}
+                    placeholder="Type a message for Python..."
+                />
+            </div>
+            <div>
+                <input
+                    value={pageNumber}
+                    onChange={(e) => setPageNumber(e.target.value)}
+                    placeholder="Type a page number..."
+                    type="number"
+                />
+            </div>
+            <button onClick={handleSend} disabled={!ready}>
+                Send
+            </button>
+
+            <div className="log">
+                {log.map((line, i) => (
+                    <div key={i} dangerouslySetInnerHTML={{__html: line}} ></div>
+                ))}
+            </div>
         </div>
     )
 }

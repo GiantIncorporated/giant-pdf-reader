@@ -1,0 +1,93 @@
+
+
+from typing import Any
+
+from pymupdf import Page
+from pymupdf import pymupdf, Rect, Matrix
+from pymupdf._mupdf import PDF_REDACT_IMAGE_NONE
+
+from core.models.pdf.text_span import TextSpan
+
+TEXT_BLOCK = 0
+
+
+class PdfService:
+
+    def __init__(self, pdf_repository):
+        self._page_count = 0
+        self._current_page_num = 0
+        self._pdf_repository = pdf_repository
+
+    @property
+    def page_count(self):
+        return self._page_count
+
+    @page_count.setter
+    def page_count(self, value):
+        self._page_count = value
+
+    @property
+    def current_page_num(self):
+        return self._current_page_num
+
+    @current_page_num.setter
+    def current_page_num(self, value):
+        self._current_page_num = value
+
+    @staticmethod
+    def render_pixmap_without_text(page: Page, zoom: float = 2.0) -> tuple[bytes, Any, Any]:
+        doc = page.parent
+        temp_doc = pymupdf.open()
+        temp_doc.insert_pdf(doc, from_page=page.number, to_page=page.number)
+        temp_page = temp_doc[0]
+
+        text_dict = temp_page.get_text("dict")
+        for block in text_dict["blocks"]:
+            for line in block["lines"]:
+                for span in line["spans"]:
+                    temp_page.add_redact_annot(Rect(span["bbox"]))
+        temp_page.apply_redactions(images=PDF_REDACT_IMAGE_NONE)
+
+        mat = Matrix(zoom, zoom)
+        pix = temp_page.get_pixmap(matrix=mat, alpha=False)
+        png_bytes = bytes(pix.samples)
+        temp_doc.close()
+        return png_bytes, pix.width, pix.height
+
+    @staticmethod
+    def extract_text_spans(page: Page) -> list[TextSpan]:
+        spans = []
+        text_dict = page.get_text("dict")
+        for block in text_dict["blocks"]:
+            if block["type"] != TEXT_BLOCK:
+                continue
+            for line in block["lines"]:
+                for span in line["spans"]:
+                    spans.append(TextSpan(
+                        text=span["text"],
+                        bounding_box=span["bbox"],
+                        font_size=span["size"],
+                        font_name=span["font"],
+                        color=span["color"],
+                        flags=span["flags"]
+                    ))
+
+        return spans
+
+    def save_pdf_in_repository(self, page_number, page_text, page_count):
+        return self._pdf_repository.save_pdf(page_number=page_number,
+                                      page_text=page_text,
+                                      page_count=page_count
+                                      )
+
+    def load_pdf_from_repository(self, page_number):
+        return self._pdf_repository.load_page(page_number=page_number)
+
+    def render_next_page(self):
+        pass
+
+    def render_entire(self):
+        pass
+
+    def render_previous_page(self):
+        pass
