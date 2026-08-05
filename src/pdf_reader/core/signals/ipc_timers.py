@@ -1,7 +1,7 @@
 from typing import Optional, Callable
 
 from PySide6 import QtCore
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot, Signal
 
 from core.services.pdf_service import PdfService
 
