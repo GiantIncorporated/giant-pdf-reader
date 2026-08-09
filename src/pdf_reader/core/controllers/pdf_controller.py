@@ -29,8 +29,16 @@ class PdfController:
         # has_page = self._storage_service.fetch_saved_page(page_number)
         has_page = False
         if not has_page:
-            self._pdf_worker.run(
+            self._pdf_worker.open_doc(
                 target=PdfRenderService.open_doc_in_process,
                 args=(file_path,
                       self._pdf_worker.queue_number,
                       self._pdf_worker.queue_page_info))
+
+
+    def fetch_next_page_handler(self):
+        self._pdf_worker.render_next_page()
+
+    def fetch_prev_page_handler(self):
+        self._pdf_worker.render_prev_page()
+

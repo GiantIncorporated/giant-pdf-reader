@@ -1,22 +1,73 @@
 import {useEffect, useRef} from "react";
+import type {ReaderProps} from "../../types/reader.type.ts";
+import TextLayer from "./components/text_layer.tsx";
+import {useRevealAnimation} from "../../hooks/useRevealAnimation.ts";
 
-export default function Reader() {
+
+export default function Reader(props: { payload: ReaderProps | null }) {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const pageContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        if (!props.payload) return;
+        console.log("This is the payload", props.payload)
+        let isCurrent = true;
+        const img = new Image();
+        img.onload = () => {
+            if (!isCurrent) return;
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            canvas.width = props.payload?.canvas_width_px ?? 0;
+            canvas.height = props.payload?.canvas_height_px ?? 0;
+            const context = canvas.getContext('2d')
+            if (!context) return;
+            context.drawImage(img, 0, 0);
+        };
+        img.onerror = (e) => console.error("Image failed to load", e.toString(), props.payload?.canvas_png_b64?.slice(0, 50));
+        if (!props.payload.canvas_png_b64) return;
+        img.src = `data:image/png;base64,${props.payload.canvas_png_b64}`;
+        console.log("This is the payload", img.src)
+        return () => {
+            isCurrent = false;
+        };
+    }, [props.payload]);
 
-        if (!ctx) return;
-        ctx.fillStyle = 'red';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }, []);
+    useRevealAnimation(pageContainerRef, [props.payload?.page_number]);
+
+    const scale = 1.5;
 
     return (
-        <div className="w-1/2 min-w-0 mx-auto bg-white h-full">
-            <canvas ref={canvasRef}/>
+        <div className="h-full">
+            {
+                props.payload ?
+                    <div
+                        className="mx-auto overflow-y-auto"
+                        ref={pageContainerRef}
+                        style={{
+                            position: "relative",
+                            width: props.payload?.width_pt ? props.payload.width_pt * scale : 1,
+                            height: props.payload?.height_pt ? props.payload.height_pt * scale : 1,
+                        }}
+                    >
+                        <canvas
+                            ref={canvasRef}
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                            }}
+                        />
+                        <TextLayer spans={props.payload.spans} scale={scale}/>
+                    </div>
+                    :
+                    <div className="mx-auto flex justify-center items-center h-full">
+                        Please insert a valid PDF file.
+                    </div>
+            }
+
         </div>
     );
 }

@@ -1,6 +1,4 @@
-import json
 import os
-import queue
 import time
 from multiprocessing import Process, Queue
 from typing import Any, Callable
@@ -9,7 +7,6 @@ from PySide6.QtCore import Signal
 
 from core.services.pdf_render_service import PdfRenderService
 from core.signals.ipc_timers import IpcTimers
-from core.utils.logging import Logger
 
 
 class PdfRenderWorker:
@@ -34,6 +31,10 @@ class PdfRenderWorker:
             self._signal
         )
 
+        self._ipc_timer.callback_send = lambda: self._render_service.render_next_page(
+            self._queue_number,
+        )
+
         self._last_dir = ""
         self._file = None
 
@@ -49,7 +50,7 @@ class PdfRenderWorker:
     def ipc_timer(self):
         return self._ipc_timer
 
-    def run(self, target: Callable[..., Any], args: tuple) -> None:
+    def open_doc(self, target: Callable[..., Any], args: tuple) -> None:
         """Render the PDF file."""
         (path, queue_number, queue_doc) = args
         if path:
@@ -63,6 +64,15 @@ class PdfRenderWorker:
                                     args=args)
             self._process.start()
             self._ipc_timer.timer_get.start(40)
-            queue_number.put(0)
+            queue_number.put(2)
             self._ipc_timer.start_time = time.perf_counter()
             self._ipc_timer.timer_waiting.start(40)
+
+    def render_next_page(self):
+        """Render the next page."""
+        self._render_service.render_next_page(self._queue_number)
+
+
+    def render_prev_page(self):
+        """Render the previous page."""
+        self._render_service.render_previous_page(self._queue_number)

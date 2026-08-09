@@ -15,7 +15,9 @@ declare global {
     interface PdfReaderBridge {
         send_message(message: string, callback: (response: string) => void): void
         get_system_info(callback: (info: string) => void): void
-        fetch_text_from_page(filepath: string, page_number: string, callback: (text: string) => void): void
+        open_pdf_page(filepath: string, page_number: string, callback: (text: string) => void): void
+        fetch_next_page(callback: (text: string) => void): void
+        fetch_prev_page(callback: (text: string) => void): void
         add(a: number, b: number, callback: (sum: number) => void): void
         messageReceived: QWebChannelObjectSignal
     }

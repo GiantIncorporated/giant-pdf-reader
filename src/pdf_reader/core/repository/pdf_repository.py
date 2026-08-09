@@ -13,7 +13,7 @@ from core.utils.logging import Logger
 
 
 class PdfRepository:
-    def __init__(self, cache:Cache):
+    def __init__(self, cache: Cache):
         self._cache = cache
 
     @staticmethod
@@ -25,13 +25,22 @@ class PdfRepository:
         except pymupdf.FileNotFoundError:
             return None
 
-
-    def save_pdf(self,page_number:int, page_text:str, page_count:int):
+    def save_pdf(self, page_number, width_pt,
+                 height_pt,
+                 canvas_width_px,
+                 canvas_height_px,
+                 canvas_png_b64,
+                 spans, page_count):
         """Save rendered pdf file by worker in cache"""
         is_saved = self._cache.set(page_number, {
             "page_number": page_number,
-            "page_text": page_text,
-            "page_count":page_count,
+            "width_pt": width_pt,
+            "height_pt": height_pt,
+            "canvas_width_px": canvas_width_px,
+            "canvas_height_px": canvas_height_px,
+            "canvas_png_b64": canvas_png_b64,
+            "spans": spans,
+            "page_count": page_count
         })
         if is_saved:
             return True
@@ -42,21 +51,25 @@ class PdfRepository:
         try:
             Logger.info("Loading page from pdf repository --start")
             response = self._cache.get(page_number)
-            Logger.info(f"Loading page from pdf repository {response}")
 
             if not response:
                 return None
-            Logger.info(f"Loading page from pdf repository text {response['page_text']}")
-            Logger.info(f"Loading page from pdf repository number {response['page_number']}")
-            Logger.info(f"Loading page from pdf repository count {response['page_count']}")
 
             Logger.info("Loading page from pdf repository --end")
-            pdf_doc = PdfDoc(page_text=response['page_text'],page_number=response['page_number'], page_count=response['page_count'])
+            pdf_doc = PdfDoc(
+                page_number=response['page_number'],
+                width_pt=response['width_pt'],
+                height_pt=response['height_pt'],
+                canvas_png_b64=response['canvas_png_b64'],
+                canvas_width_px=response['canvas_width_px'],
+                canvas_height_px=response['canvas_height_px'],
+                spans=response['spans'],
+                page_count=response['page_count']
+            )
             return pdf_doc
         except Exception as err:
             Logger.error(f"Error loading page from pdf repository: {err}")
             return None
-
 
     def clear_cache(self):
         """Clear the cache."""
