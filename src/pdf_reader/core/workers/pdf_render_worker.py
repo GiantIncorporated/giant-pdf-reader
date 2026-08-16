@@ -64,7 +64,7 @@ class PdfRenderWorker:
                                     args=args)
             self._process.start()
             self._ipc_timer.timer_get.start(40)
-            queue_number.put(2)
+            queue_number.put(0)
             self._ipc_timer.start_time = time.perf_counter()
             self._ipc_timer.timer_waiting.start(40)
 
