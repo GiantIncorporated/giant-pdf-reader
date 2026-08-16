@@ -1,17 +1,21 @@
-// TextLayer.jsx
+// components/text_layer.tsx
+interface TextLayerProps {
+    spans: any[];
+    scale: number;
+}
 
-export default function TextLayer({spans, scale}: { spans: any[], scale: number }) {
+export default function TextLayer({ spans, scale }: TextLayerProps) {
 
-    console.log('Spans of textLayer', spans)
+    console.log('This is the text layer',spans)
 
     return (
-        <div className="w-full h-full" style={{position: "absolute", top: 0, left: 0}}>
-            {spans.map((span, i) => {
+        <div className="text-layer" style={{ position: "absolute", top: 0, left: 0 }}>
+            {spans.map((span, spanIndex) => {
                 const [x0, y0, x1, y1] = span.bounding_box;
                 return (
                     <span
-                        key={i}
-                        data-span-index={i}
+                        key={spanIndex}
+                        data-span-index={spanIndex}
                         className="pdf-text-span"
                         style={{
                             position: "absolute",
@@ -26,8 +30,18 @@ export default function TextLayer({spans, scale}: { spans: any[], scale: number 
                             color: intToRgb(span.color),
                         }}
                     >
-            {span.text}
-          </span>
+                        {Array.from(span.text).map((char:any, charIndex) => (
+                            <span
+                                key={charIndex}
+                                className="pdf-text-char"
+                                data-span-index={spanIndex}
+                                data-char-index={charIndex}
+                                style={{ display: "inline-block", opacity: 0 }}
+                            >
+                                {char === " " ? "\u00A0" : char}
+                            </span>
+                        ))}
+                    </span>
                 );
             })}
         </div>

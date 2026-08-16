@@ -33,7 +33,10 @@ export default function Reader(props: { payload: ReaderProps | null }) {
         };
     }, [props.payload]);
 
-    useRevealAnimation(pageContainerRef, [props.payload?.page_number]);
+    useRevealAnimation(pageContainerRef, [props.payload?.page_number],{
+        duration: 0.04,
+        gapBetweenChars: 0.008
+    });
 
     const scale = 1.5;
 
