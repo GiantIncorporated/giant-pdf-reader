@@ -5,33 +5,16 @@ from pymupdf import pymupdf, Rect, Matrix
 from pymupdf._mupdf import PDF_REDACT_IMAGE_NONE
 
 from core.models.pdf.text_span import TextSpan
-from core.utils.logging import Logger
 
 TEXT_BLOCK = 0
 
 
 class PdfService:
 
+    state = {"page_count": 0, "current_page_num": 0}
+
     def __init__(self, pdf_repository):
-        self._page_count = 0
-        self._current_page_num = 0
         self._pdf_repository = pdf_repository
-
-    @property
-    def page_count(self):
-        return self._page_count
-
-    @page_count.setter
-    def page_count(self, value):
-        self._page_count = value
-
-    @property
-    def current_page_num(self):
-        return self._current_page_num
-
-    @current_page_num.setter
-    def current_page_num(self, value):
-        self._current_page_num = value
 
     @staticmethod
     def render_pixmap_without_text(page: Page, zoom: float = 2.0) -> tuple[bytes, Any, Any]:
@@ -99,5 +82,5 @@ class PdfService:
     def render_entire(self):
         pass
 
-    def render_previous_page(self,  queue_page_number=None):
+    def render_previous_page(self, queue_page_number=None):
         pass

@@ -6,8 +6,6 @@ interface TextLayerProps {
 
 export default function TextLayer({ spans, scale }: TextLayerProps) {
 
-    console.log('This is the text layer',spans)
-
     return (
         <div className="text-layer" style={{ position: "absolute", top: 0, left: 0 }}>
             {spans.map((span, spanIndex) => {

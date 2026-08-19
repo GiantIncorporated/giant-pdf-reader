@@ -32,6 +32,7 @@ class PdfRepository:
                  canvas_png_b64,
                  spans, page_count):
         """Save rendered pdf file by worker in cache"""
+        Logger.debug(f"Saving pdf page in repository {page_number} {canvas_png_b64}")
         is_saved = self._cache.set(page_number, {
             "page_number": page_number,
             "width_pt": width_pt,
@@ -55,7 +56,7 @@ class PdfRepository:
             if not response:
                 return None
 
-            Logger.info("Loading page from pdf repository --end")
+            Logger.info(f"Loading page from pdf repository {response}")
             pdf_doc = PdfDoc(
                 page_number=response['page_number'],
                 width_pt=response['width_pt'],
@@ -66,6 +67,7 @@ class PdfRepository:
                 spans=response['spans'],
                 page_count=response['page_count']
             )
+            Logger.debug(f"Loaded pdf page from repository {page_number} {response['canvas_png_b64']}")
             return pdf_doc
         except Exception as err:
             Logger.error(f"Error loading page from pdf repository: {err}")

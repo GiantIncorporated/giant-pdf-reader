@@ -30,8 +30,8 @@ function App() {
     function handleSend() {
         if (!bridge || !filepath.trim()) return
         // Slot with result=str -> called with a JS callback for the return value
-        bridge.open_pdf_page(filepath, pageNumber, () => {
-            console.log(`You: ${filepath}`, pageNumber)
+        bridge.open_pdf_page(filepath, () => {
+            console.log(`You: ${filepath}`)
         })
     }
 

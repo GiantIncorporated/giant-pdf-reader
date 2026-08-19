@@ -39,6 +39,10 @@ class PdfRenderWorker:
         self._file = None
 
     @property
+    def process(self):
+        return self._process
+
+    @property
     def queue_number(self):
         return self._queue_number
 
@@ -50,7 +54,7 @@ class PdfRenderWorker:
     def ipc_timer(self):
         return self._ipc_timer
 
-    def open_doc(self, target: Callable[..., Any], args: tuple) -> None:
+    def open_doc(self,target: Callable[..., Any], args: tuple):
         """Render the PDF file."""
         (path, queue_number, queue_doc) = args
         if path:
@@ -58,8 +62,6 @@ class PdfRenderWorker:
             if self._process:
                 queue_number.put(-1)
             self._ipc_timer.timer_send.stop()
-            self._render_service.current_page_number = 0
-            self._render_service.page_count = 0
             self._process = Process(target=target,
                                     args=args)
             self._process.start()
@@ -67,6 +69,7 @@ class PdfRenderWorker:
             queue_number.put(0)
             self._ipc_timer.start_time = time.perf_counter()
             self._ipc_timer.timer_waiting.start(40)
+
 
     def render_next_page(self):
         """Render the next page."""

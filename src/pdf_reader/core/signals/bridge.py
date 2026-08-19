@@ -21,10 +21,10 @@ class Bridge(QObject):
         self.messageReceived.emit(response)
         return response
 
-    @Slot(str, int, result=str)
-    def open_pdf_page(self, filepath, page_number) -> None:
-        Logger.info(f"Fetching text from page, {filepath} {page_number}")
-        self._pdf_controller.fetch_page_handler(filepath, page_number)
+    @Slot(str, result=str)
+    def open_pdf_page(self, filepath) -> None:
+        Logger.info(f"Fetching text from page, {filepath}")
+        self._pdf_controller.fetch_page_handler(filepath)
 
     @Slot()
     def fetch_next_page(self) -> None:

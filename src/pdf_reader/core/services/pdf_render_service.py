@@ -26,6 +26,7 @@ class PdfRenderService(PdfService):
         queue_page_info.put(page_count)
         while True:
             page_number = queue_number.get()
+            Logger.info(f"Inside open_doc_in_process, {page_number}")
             if page_number < 0:
                 break
             page = doc.load_page(page_number)
@@ -56,9 +57,9 @@ class PdfRenderService(PdfService):
             Logger.info(f"Using render service")
             if isinstance(ret, int):
                 ipc_timer.timer_waiting.stop()
-                self.page_count = ret
-                self.current_page_num = self.current_page_num + 1
-                total_page_count = self.page_count
+                self.state["page_count"] = ret
+                self.state["current_page_num"] = self.state["current_page_num"] + 1
+                total_page_count = self.state["page_count"]
             else:
                 (page_number, width_pt, height_pt,
                  canvas_width_px, canvas_height_px,
@@ -69,12 +70,17 @@ class PdfRenderService(PdfService):
                 canvas_width_pix = canvas_width_px
                 canvas_height_pix = canvas_height_px
                 canvas_png_img_b64 = canvas_png_b64
-                self.current_page_num = page_number
+
+                self.state["current_page_num"] = page_number
+                self.state["page_count"] = page_count
+
                 total_page_count = page_count
                 page_content = spans
 
+            Logger.debug(f"This is image {canvas_png_img_b64}")
+
             is_saved = self.save_pdf_in_repository(
-                page_number=self.current_page_num,
+                page_number=self.state["current_page_num"],
                 width_pt=width_point,
                 height_pt=height_point,
                 canvas_width_px=canvas_width_pix,
@@ -84,7 +90,7 @@ class PdfRenderService(PdfService):
                 page_count=total_page_count
             )
             if is_saved:
-                pdf_doc = self.load_pdf_from_repository(self.current_page_num)
+                pdf_doc = self.load_pdf_from_repository(self.state["current_page_num"])
                 Logger.debug(f"PDF document saved")
                 payload = json.dumps({
                     "page_number": pdf_doc.page_number,
@@ -102,10 +108,13 @@ class PdfRenderService(PdfService):
 
     @override
     def render_next_page(self, queue_page_num=None):
-        if self.current_page_num < self.page_count - 1:
-            queue_page_num.put(self.current_page_num + 1)
+        Logger.info(f"Rendering next page, {self.state["current_page_num"]}")
+        if self.state["current_page_num"] < self.state["page_count"] - 1:
+            self.state["current_page_num"] = self.state["current_page_num"] + 1
+            Logger.info(f"Inside Rendering next page, {self.state["current_page_num"]}")
+            queue_page_num.put(self.state["current_page_num"])
 
     @override
     def render_previous_page(self, queue_page_num=None):
-        if self.current_page_num > 0:
-            queue_page_num.put(self.current_page_num - 1)
+        if self.state["current_page_num"] > 0:
+            queue_page_num.put(self.state["current_page_num"] - 1)

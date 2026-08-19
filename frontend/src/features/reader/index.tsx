@@ -27,7 +27,6 @@ export default function Reader(props: { payload: ReaderProps | null }) {
         img.onerror = (e) => console.error("Image failed to load", e.toString(), props.payload?.canvas_png_b64?.slice(0, 50));
         if (!props.payload.canvas_png_b64) return;
         img.src = `data:image/png;base64,${props.payload.canvas_png_b64}`;
-        console.log("This is the payload", img.src)
         return () => {
             isCurrent = false;
         };
