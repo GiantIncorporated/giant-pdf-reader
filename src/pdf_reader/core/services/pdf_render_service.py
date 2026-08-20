@@ -1,6 +1,6 @@
 # Author: Enoch Viewu
 # Date Created: 2026-07-26
-# Last Modified: 2026-08-08
+# Last Modified: 2026-08-20
 # Description: Provides methods for rendering PDF pages.
 import base64
 import json
@@ -47,61 +47,44 @@ class PdfRenderService(PdfService):
     def fetch_rendered_page(self, queue_page_info, ipc_timer, signal):
         try:
             ret = queue_page_info.get(False)
-            page_content = []
-            width_point = None
-            height_point = None
-            canvas_width_pix = None
-            canvas_height_pix = None
-            canvas_png_img_b64 = None
 
             Logger.info(f"Using render service")
+
             if isinstance(ret, int):
                 ipc_timer.timer_waiting.stop()
                 self.state["page_count"] = ret
                 self.state["current_page_num"] = self.state["current_page_num"] + 1
-                total_page_count = self.state["page_count"]
             else:
                 (page_number, width_pt, height_pt,
                  canvas_width_px, canvas_height_px,
                  canvas_png_b64, spans, page_count) = ret
 
-                width_point = width_pt
-                height_point = height_pt
-                canvas_width_pix = canvas_width_px
-                canvas_height_pix = canvas_height_px
-                canvas_png_img_b64 = canvas_png_b64
-
                 self.state["current_page_num"] = page_number
                 self.state["page_count"] = page_count
 
-                total_page_count = page_count
-                page_content = spans
-
-            Logger.debug(f"This is image {canvas_png_img_b64}")
-
-            is_saved = self.save_pdf_in_repository(
-                page_number=self.state["current_page_num"],
-                width_pt=width_point,
-                height_pt=height_point,
-                canvas_width_px=canvas_width_pix,
-                canvas_height_px=canvas_height_pix,
-                canvas_png_b64=canvas_png_img_b64,
-                spans=page_content,
-                page_count=total_page_count
-            )
-            if is_saved:
-                pdf_doc = self.load_pdf_from_repository(self.state["current_page_num"])
-                Logger.debug(f"PDF document saved")
-                payload = json.dumps({
-                    "page_number": pdf_doc.page_number,
-                    "width_pt": pdf_doc.width_pt,
-                    "height_pt": pdf_doc.height_pt,
-                    "canvas_width_px": pdf_doc.canvas_width_px,
-                    "canvas_height_px": pdf_doc.canvas_height_px,
-                    "canvas_png_b64": pdf_doc.canvas_png_b64,
-                    "spans": pdf_doc.page_spans,
-                })
-                signal.emit(payload)
+                is_saved = self.save_pdf_in_repository(
+                    page_number=page_number,
+                    width_pt=width_pt,
+                    height_pt=height_pt,
+                    canvas_width_px=canvas_width_px,
+                    canvas_height_px=canvas_height_px,
+                    canvas_png_b64=canvas_png_b64,
+                    spans=spans,
+                    page_count=page_count
+                )
+                if is_saved:
+                    pdf_doc = self.load_pdf_from_repository(page_number)
+                    Logger.debug(f"PDF document saved")
+                    payload = json.dumps({
+                        "page_number": pdf_doc.page_number,
+                        "width_pt": pdf_doc.width_pt,
+                        "height_pt": pdf_doc.height_pt,
+                        "canvas_width_px": pdf_doc.canvas_width_px,
+                        "canvas_height_px": pdf_doc.canvas_height_px,
+                        "canvas_png_b64": pdf_doc.canvas_png_b64,
+                        "spans": pdf_doc.page_spans,
+                    })
+                    signal.emit(payload)
 
         except queue.Empty as ex:
             pass

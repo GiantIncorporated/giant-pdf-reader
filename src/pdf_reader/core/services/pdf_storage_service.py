@@ -67,5 +67,5 @@ class PDFStorageService(PdfService):
             "canvas_png_b64": payload.canvas_png_b64,
             "spans": payload.page_spans,
         })
-        Logger.debug(f"sending page from storage text {file}")
+        Logger.debug(f"sending page from storage text")
         self._signal.emit(file)
