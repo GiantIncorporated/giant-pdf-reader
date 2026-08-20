@@ -1,60 +1,22 @@
 # Author: Enoch Viewu
 # Date Created: 2026-07-26
-# Last Modified: 2026-07-31
+# Last Modified: 2026-08-20
 # Description: Provides methods for rendering PDF pages.
+import base64
 import json
-import multiprocessing as mp
 import queue
+from dataclasses import asdict
 
-from PySide6.QtCore import Slot, Signal
+from typing_extensions import override
 
 from core.repository.pdf_repository import PdfRepository
-from core.signals.ipc_timers import IpcTimers
+from core.services.pdf_service import PdfService
 from core.utils.logging import Logger
 
 
-class PdfRenderService:
-    def __init__(self, pdf_repository, signal: Signal):
-        self._queue_number = mp.Queue()
-        self._queue_page_info = mp.Queue()
-        self._page_count = 0
-        self._current_page_num = 0
-        self._pdf_repository = pdf_repository
-        self._signal = signal
-
-        self._ipc_timer = IpcTimers()
-
-        self._ipc_timer.timer_send.timeout.connect(self.on_timer_send)
-        self._ipc_timer.timer_get.timeout.connect(self.on_timer_get)
-        self._ipc_timer.timer_waiting.timeout.connect(self.on_timer_waiting)
-
-    @property
-    def queue_number(self):
-        return self._queue_number
-
-    @property
-    def queue_page_info(self):
-        return self._queue_page_info
-
-    @property
-    def ipc_timer(self):
-        return self._ipc_timer
-
-    @property
-    def page_count(self):
-        return self._page_count
-
-    @page_count.setter
-    def page_count(self, value):
-        self._page_count = value
-
-    @property
-    def current_page_num(self):
-        return self._current_page_num
-
-    @current_page_num.setter
-    def current_page_num(self, value):
-        self._current_page_num = value
+class PdfRenderService(PdfService):
+    def __init__(self, pdf_repository):
+        super().__init__(pdf_repository)
 
     @staticmethod
     def open_doc_in_process(path, queue_number, queue_page_info):
@@ -64,65 +26,78 @@ class PdfRenderService:
         queue_page_info.put(page_count)
         while True:
             page_number = queue_number.get()
+            Logger.info(f"Inside open_doc_in_process, {page_number}")
             if page_number < 0:
                 break
             page = doc.load_page(page_number)
-            page_text = page.get_text("html")
-            queue_page_info.put((page_number, page_count, page_text))
+            spans = PdfRenderService.extract_text_spans(page)
+            png_bytes, w, h = PdfRenderService.render_pixmap_without_text(page)
+            queue_page_info.put((
+                page_number,
+                page.rect.width,
+                page.rect.height,
+                w,
+                h,
+                base64.b64encode(png_bytes).decode('ascii'),
+                [asdict(span) for span in spans],
+                page_count,
+            ))
         doc.close()
 
-    @Slot()
-    def on_timer_get(self):
-        self._fetch_rendered_page()
-
-    def _fetch_rendered_page(self):
+    def fetch_rendered_page(self, queue_page_info, ipc_timer, signal):
         try:
-            ret = self.queue_page_info.get(False)
-            page_content = ""
-            Logger.info(f"Using render service: {ret}")
-            if isinstance(ret, int):
-                self._ipc_timer.timer_waiting.stop()
-                self._page_count = ret
-                current_page_number = self._current_page_num + 1
-                total_page_count = self._page_count
-            else:
-                (page_number, page_count, page_text) = ret
-                current_page_number = page_number
-                total_page_count = page_count
-                page_content = page_text
+            ret = queue_page_info.get(False)
 
-            is_saved = self._pdf_repository.save_pdf(page_number=current_page_number,
-                                                     page_text=page_content,
-                                                     page_count=total_page_count
-                                                     )
-            if is_saved:
-                pdf_doc = self._pdf_repository.load_page(current_page_number)
-                payload = json.dumps({
-                    "page_number": pdf_doc.page_number,
-                    "page_count": pdf_doc.page_count,
-                    "page_text": pdf_doc.page_text
-                })
-                self._signal.emit(payload)
+            Logger.info(f"Using render service")
+
+            if isinstance(ret, int):
+                ipc_timer.timer_waiting.stop()
+                self.state["page_count"] = ret
+                self.state["current_page_num"] = self.state["current_page_num"] + 1
+            else:
+                (page_number, width_pt, height_pt,
+                 canvas_width_px, canvas_height_px,
+                 canvas_png_b64, spans, page_count) = ret
+
+                self.state["current_page_num"] = page_number
+                self.state["page_count"] = page_count
+
+                is_saved = self.save_pdf_in_repository(
+                    page_number=page_number,
+                    width_pt=width_pt,
+                    height_pt=height_pt,
+                    canvas_width_px=canvas_width_px,
+                    canvas_height_px=canvas_height_px,
+                    canvas_png_b64=canvas_png_b64,
+                    spans=spans,
+                    page_count=page_count
+                )
+                if is_saved:
+                    pdf_doc = self.load_pdf_from_repository(page_number)
+                    Logger.debug(f"PDF document saved")
+                    payload = json.dumps({
+                        "page_number": pdf_doc.page_number,
+                        "width_pt": pdf_doc.width_pt,
+                        "height_pt": pdf_doc.height_pt,
+                        "canvas_width_px": pdf_doc.canvas_width_px,
+                        "canvas_height_px": pdf_doc.canvas_height_px,
+                        "canvas_png_b64": pdf_doc.canvas_png_b64,
+                        "spans": pdf_doc.page_spans,
+                    })
+                    signal.emit(payload)
 
         except queue.Empty as ex:
             pass
 
-    @Slot()
-    def on_timer_waiting(self):
-        self._showing_loading_progress()
+    @override
+    def render_next_page(self, queue_page_num=None):
+        Logger.info(f"Rendering next page, {self.state["current_page_num"]}")
+        if self.state["current_page_num"] < self.state["page_count"] - 1:
+            self.state["current_page_num"] = self.state["current_page_num"] + 1
+            Logger.info(f"Inside Rendering next page, {self.state["current_page_num"]}")
+            queue_page_num.put(self.state["current_page_num"])
 
-    def _showing_loading_progress(self):
-        pass
-
-    @Slot()
-    def on_timer_send(self):
-        self._render_next_page()
-
-    def _render_next_page(self):
-        pass
-
-    def render_entire(self):
-        pass
-
-    def render_previous_page(self):
-        pass
+    @override
+    def render_previous_page(self, queue_page_num=None):
+        if self.state["current_page_num"] > 0:
+            queue_page_num.put(self.state["current_page_num"] - 1)

@@ -61,3 +61,10 @@ class MainWindow(QMainWindow):
             )
         Logger.info("Local file found")
         self._view.load(QUrl.fromLocalFile(dist_index))
+
+    def closeEvent(self, event, /):
+
+        event.accept()
+        super().closeEvent(event)
+
+

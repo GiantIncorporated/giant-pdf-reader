@@ -1,45 +1,81 @@
 import os
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 from typing import Any, Callable
 
+from PySide6.QtCore import Signal
+
 from core.services.pdf_render_service import PdfRenderService
-from core.services.pdf_storage_service import PDFStorageService
-from core.utils.logging import Logger
+from core.signals.ipc_timers import IpcTimers
 
 
 class PdfRenderWorker:
     """This class provides services for rendering PDF files."""
 
-    def __init__(self, render_service: PdfRenderService, storage_service: PDFStorageService) -> None:
+    def __init__(self,
+                 signal: Signal,
+                 render_service: PdfRenderService,
+                 ) -> None:
+
+        self._queue_number = Queue()
+        self._queue_page_info = Queue()
+        self._signal = signal
+
         self._process = None
         self._render_service = render_service
-        self._storage_service = storage_service
+
+        self._ipc_timer = IpcTimers()
+        self._ipc_timer.callback_get = lambda: self._render_service.fetch_rendered_page(
+            self._queue_page_info,
+            self._ipc_timer,
+            self._signal
+        )
+
+        self._ipc_timer.callback_send = lambda: self._render_service.render_next_page(
+            self._queue_number,
+        )
+
         self._last_dir = ""
         self._file = None
 
-    def render_pdf(self, page_number: int, target: Callable[..., Any], args: tuple) -> None:
+    @property
+    def process(self):
+        return self._process
+
+    @property
+    def queue_number(self):
+        return self._queue_number
+
+    @property
+    def queue_page_info(self):
+        return self._queue_page_info
+
+    @property
+    def ipc_timer(self):
+        return self._ipc_timer
+
+    def open_doc(self,target: Callable[..., Any], args: tuple):
         """Render the PDF file."""
-        Logger.info(f"Using render service render pdf {args}")
-
-        has_page = self._storage_service.fetch_saved_page(page_number)
-        Logger.info(f"[render_pdf] has_page {has_page}")
-
-        if has_page:
-            return
-        Logger.info(f"[render_pdf] has no save page {has_page}")
         (path, queue_number, queue_doc) = args
         if path:
             self._last_dir, self._file = os.path.split(path)
             if self._process:
                 queue_number.put(-1)
-            self._render_service.ipc_timer.timer_send.stop()
-            self._render_service.current_page_number = 0
-            self._render_service.page_count = 0
+            self._ipc_timer.timer_send.stop()
             self._process = Process(target=target,
                                     args=args)
             self._process.start()
-            self._render_service.ipc_timer.timer_get.start(40)
+            self._ipc_timer.timer_get.start(40)
             queue_number.put(0)
-            self._render_service.ipc_timer.start_time = time.perf_counter()
-            self._render_service.ipc_timer.timer_waiting.start(40)
+            self._ipc_timer.start_time = time.perf_counter()
+            self._ipc_timer.timer_waiting.start(40)
+
+
+    def render_next_page(self):
+        """Render the next page."""
+        self._render_service.render_next_page(self._queue_number)
+
+
+    def render_prev_page(self):
+        """Render the previous page."""
+        self._render_service.render_previous_page(self._queue_number)
