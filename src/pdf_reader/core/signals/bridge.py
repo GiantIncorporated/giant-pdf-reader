@@ -8,6 +8,7 @@ from core.utils.logging import Logger
 
 class Bridge(QObject):
     messageReceived = Signal(str)
+    scaleChanged = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -20,6 +21,11 @@ class Bridge(QObject):
         response = f"Python received: {message!r}"
         self.messageReceived.emit(response)
         return response
+
+    @Slot(int)
+    def set_scale(self, scale: int) -> None:
+        Logger.info(f"Setting scale to {scale}")
+        self.scaleChanged.emit(scale)
 
     @Slot(str, result=str)
     def open_pdf_page(self, filepath) -> None:

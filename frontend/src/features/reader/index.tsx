@@ -3,8 +3,9 @@ import type {ReaderProps} from "../../types/reader.type.ts";
 import TextLayer from "./components/text_layer.tsx";
 import {useRevealAnimation} from "../../hooks/useRevealAnimation.ts";
 
+const SCALAR = 100;
 
-export default function Reader(props: { payload: ReaderProps | null }) {
+export default function Reader(props: { scale: number, payload: ReaderProps | null }) {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const pageContainerRef = useRef<HTMLDivElement | null>(null);
@@ -37,7 +38,7 @@ export default function Reader(props: { payload: ReaderProps | null }) {
         gapBetweenChars: 0.008
     });
 
-    const scale = 1.2;
+    let scale = props.scale / SCALAR;
 
     return (
         <div className="flex justify-center items-center h-full">

@@ -8,14 +8,15 @@ import os
 from PySide6.QtCore import QUrl
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QStatusBar, QHBoxLayout
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QStatusBar
 
 import pdf_reader.config as config
 from core.signals.bridge import Bridge
 from core.utils.helpers import load_stylesheet
 from pdf_reader.core.utils.logging import Logger
 from pdf_reader.core.utils.logging_web_page import LoggingWebPage
-from ui.widgets.status_bar_tools.pdf_nav_buttons import PdfNavButtons
+from ui.widgets.status_bar.status_bar import StatusBar
+from ui.widgets.status_bar.tools.pdf_nav_buttons import PdfNavButtons
 from ui.widgets.tab_widget import TabWidget
 from ui.widgets.toolbars.home_toolbar import HomeToolbar
 
@@ -41,6 +42,7 @@ class MainWindow(QMainWindow):
         self._widget = QWidget()
 
         self._setup_tab_toolbar()
+        self._setup_status_bar()
 
         self._view = QWebEngineView()
         self._view.setPage(LoggingWebPage(self._view))
@@ -50,18 +52,12 @@ class MainWindow(QMainWindow):
         self._widget.setLayout(self._layout)
         self.setCentralWidget(self._widget)
 
-        self._setup_status_bar()
-
         self._load_frontend()
 
 
     def _setup_status_bar(self):
-        self._statusbar = QStatusBar()
+        self._statusbar = StatusBar(self._bridge)
         self.setStatusBar(self._statusbar)
-        self._statusbar.setSizeGripEnabled(False)
-
-        self.pdf_nav = PdfNavButtons(self._bridge)
-        self._statusbar.addWidget(self.pdf_nav, stretch=1)
 
 
     def _setup_tab_toolbar(self):
