@@ -37,10 +37,10 @@ export default function Reader(props: { payload: ReaderProps | null }) {
         gapBetweenChars: 0.008
     });
 
-    const scale = 1.5;
+    const scale = 1.2;
 
     return (
-        <div className="h-full">
+        <div className="flex justify-center items-center h-full">
             {
                 props.payload ?
                     <div
