@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QWidget, QSlider, QHBoxLayout, QButtonGroup, QToolButton
 
 from config import PACKAGE_ROOT
-from core.signals.bridge import Bridge
+from features.pdf_display.signals.bridge import Bridge
 from ui.widgets.buttons.button_with_icon import ButtonWithIcon
 
 _ICON_DIR = PACKAGE_ROOT / "assets" / "icons"

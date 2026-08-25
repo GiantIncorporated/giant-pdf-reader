@@ -11,8 +11,8 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
 import pdf_reader.config as config
-from core.signals.bridge import Bridge
 from core.utils.helpers import load_stylesheet
+from features.pdf_display.signals.bridge import Bridge
 from pdf_reader.core.utils.logging import Logger
 from pdf_reader.core.utils.logging_web_page import LoggingWebPage
 from ui.widgets.status_bar.status_bar import StatusBar

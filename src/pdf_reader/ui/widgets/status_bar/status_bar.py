@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QStatusBar
 
-from core.signals.bridge import Bridge
+from features.pdf_display.signals.bridge import Bridge
 from ui.widgets.status_bar.tools.pdf_nav_buttons import PdfNavButtons
 from ui.widgets.status_bar.tools.pdf_display_controls import PdfScaleSlider
 

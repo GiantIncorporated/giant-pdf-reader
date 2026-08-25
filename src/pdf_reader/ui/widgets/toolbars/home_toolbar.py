@@ -2,8 +2,8 @@ from PySide6.QtCore import Slot, Qt
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QFileDialog
 
 from config import PACKAGE_ROOT
-from core.signals.bridge import Bridge
 from core.utils.logging import Logger
+from features.pdf_display.signals.bridge import Bridge
 from ui.widgets.buttons.tool_button import ToolButton
 
 _ICON_DIR = PACKAGE_ROOT / "assets" / "icons"
