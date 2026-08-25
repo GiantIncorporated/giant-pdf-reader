@@ -1,6 +1,6 @@
 # Author: Enoch Viewu
 # Date Created: 2026-07-26
-# Last Modified: 2026-08-20
+# Last Modified: 2026-08-21
 # Description: The main window of the application
 
 import os
@@ -8,7 +8,7 @@ import os
 from PySide6.QtCore import QUrl
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QStatusBar
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
 import pdf_reader.config as config
 from core.signals.bridge import Bridge
@@ -16,10 +16,8 @@ from core.utils.helpers import load_stylesheet
 from pdf_reader.core.utils.logging import Logger
 from pdf_reader.core.utils.logging_web_page import LoggingWebPage
 from ui.widgets.status_bar.status_bar import StatusBar
-from ui.widgets.status_bar.tools.pdf_nav_buttons import PdfNavButtons
 from ui.widgets.tab_widget import TabWidget
 from ui.widgets.toolbars.home_toolbar import HomeToolbar
-
 
 
 class MainWindow(QMainWindow):

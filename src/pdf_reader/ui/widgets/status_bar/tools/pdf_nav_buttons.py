@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from config import PACKAGE_ROOT
 from core.signals.bridge import Bridge
-from ui.widgets.buttons.nav_button import NavButton
+from ui.widgets.buttons.button_with_icon import ButtonWithIcon
 
 _ICON_DIR = PACKAGE_ROOT / "assets" / "icons"
 
@@ -18,11 +18,11 @@ class PdfNavButtons(QWidget):
         self._h_layout.setSpacing(2)
         self._h_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        left_arrow_button = NavButton("Left arrow", str(_ICON_DIR / "prev.png"))
+        left_arrow_button = ButtonWithIcon("Left arrow", str(_ICON_DIR / "prev.png"))
         self._h_layout.addWidget(left_arrow_button)
         left_arrow_button.clicked.connect(self.on_prev_page_clicked)
 
-        right_arrow_button = NavButton("Right arrow", str(_ICON_DIR / "next.png"))
+        right_arrow_button = ButtonWithIcon("Right arrow", str(_ICON_DIR / "next.png"))
         right_arrow_button.clicked.connect(self.on_next_page_clicked)
         self._h_layout.addWidget(right_arrow_button)
 

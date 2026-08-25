@@ -1,6 +1,6 @@
 /*
- * tool_button.qss - Qt Style Sheet
- * Created: 8/20/2026
+ * icon_only_button.qss - Qt Style Sheet
+ * Created: 8/25/2026
  *
  * QSS Toolkit Quick Tips:
  * - Press Ctrl+Space (Cmd+Space) for intelligent auto-completion
@@ -9,12 +9,11 @@
  */
 
 /* Add your QSS styles here */
+
 QToolButton{
-    min-height: 60px;
-    border-radius: 4px;
-    background-color: white
+    min-width: 4px;
 }
 
-
-
-
+QToolButton:checked {
+    background-color: #C1BFC5;
+}
