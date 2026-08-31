@@ -43,6 +43,17 @@ class Bridge(QObject):
         Logger.info(f"Fetching previous page")
         self._pdf_controller.fetch_prev_page_handler()
 
+    @Slot()
+    def set_view_mode(self, view_mode) -> None:
+        match view_mode:
+            case 0:
+                self._pdf_controller.on_display_single_page_view()
+            case 1:
+                self._pdf_controller.on_display_double_page_view()
+            case 2:
+                self._pdf_controller.on_display_scroll_view()
+            case _:
+                self._pdf_controller.on_display_single_page_view()
 
     @Slot(result=str)
     def get_system_info(self) -> str:

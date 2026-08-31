@@ -30,6 +30,7 @@ class PdfRepository:
                  canvas_png_b64,
                  spans, page_count):
         """Save rendered pdf file by worker in cache"""
+        Logger.debug(f"Saving pdf page in repository {page_number}")
         is_saved = self._cache.set(page_number, {
             "page_number": page_number,
             "width_pt": width_pt,
@@ -44,8 +45,8 @@ class PdfRepository:
             return True
         return False
 
-    def load_single_page(self, page_number) -> None | PdfDoc:
-        """Load the single page data from the cache."""
+    def load_page(self, page_number) -> None | PdfDoc:
+        """Load the rendered page data from the cache."""
         try:
             Logger.info("Loading page from pdf repository --start")
             response = self._cache.get(page_number)
@@ -53,49 +54,21 @@ class PdfRepository:
             if not response:
                 return None
 
-            pdf_doc = PdfRepository._get_pdf_doc(response)
+            pdf_doc = PdfDoc(
+                page_number=response['page_number'],
+                width_pt=response['width_pt'],
+                height_pt=response['height_pt'],
+                canvas_png_b64=response['canvas_png_b64'],
+                canvas_width_px=response['canvas_width_px'],
+                canvas_height_px=response['canvas_height_px'],
+                spans=response['spans'],
+                page_count=response['page_count']
+            )
             Logger.debug(f"Loaded pdf page from repository {page_number}")
             return pdf_doc
         except Exception as err:
             Logger.error(f"Error loading page from pdf repository: {err}")
             return None
-
-    def load_double_page(self, page_number) -> None | list[PdfDoc]:
-        try:
-            Logger.info("Loading page from pdf repository --start")
-            pages = []
-            first_page = self._cache.get(page_number)
-            if first_page is None:
-                return None
-
-            first_pdf_doc = PdfRepository._get_pdf_doc(first_page)
-            pages.append(first_pdf_doc)
-
-            second_page = self._cache.get(page_number + 1)
-
-            if second_page is None:
-                return pages
-
-            second_pdf_doc = PdfRepository._get_pdf_doc(second_page)
-            pages.append(second_pdf_doc)
-
-            return pages
-        except Exception as err:
-            Logger.error(f"Error loading page from pdf repository: {err}")
-            return None
-
-    @staticmethod
-    def _get_pdf_doc(pdf_page) -> PdfDoc:
-        return PdfDoc(
-            page_number=pdf_page['page_number'],
-            width_pt=pdf_page['width_pt'],
-            height_pt=pdf_page['height_pt'],
-            canvas_png_b64=pdf_page['canvas_png_b64'],
-            canvas_width_px=pdf_page['canvas_width_px'],
-            canvas_height_px=pdf_page['canvas_height_px'],
-            spans=pdf_page['spans'],
-            page_count=pdf_page['page_count']
-        )
 
     def clear_cache(self):
         """Clear the cache."""

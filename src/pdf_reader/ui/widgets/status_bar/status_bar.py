@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QStatusBar
 
 from features.pdf_display.signals.bridge import Bridge
-from ui.widgets.status_bar.tools.pdf_nav_buttons import PdfNavButtons
 from ui.widgets.status_bar.tools.pdf_display_controls import PdfScaleSlider
+from ui.widgets.status_bar.tools.pdf_nav_buttons import PdfNavButtons
 
 
 class StatusBar(QStatusBar):
@@ -17,3 +17,4 @@ class StatusBar(QStatusBar):
         # Add pdf scale for zooming or scaling
         self._pdf_scale_slider = PdfScaleSlider(bridge)
         self.addWidget(self._pdf_scale_slider,)
+

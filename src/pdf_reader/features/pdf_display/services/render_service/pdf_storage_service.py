@@ -9,7 +9,7 @@ from PySide6.QtCore import Signal
 
 from features.pdf_display.models.pdf.pdf_doc import PdfDoc
 from features.pdf_display.repository.pdf_repository import PdfRepository
-from features.pdf_display.services.pdf_service import PdfService
+from features.pdf_display.services.render_service.pdf_service import PdfService
 from core.utils.logging import Logger
 
 

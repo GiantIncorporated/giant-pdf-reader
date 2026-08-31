@@ -50,4 +50,6 @@ class PdfScaleSlider(QWidget):
 
     @Slot(int)
     def _on_button_clicked(self, button: QToolButton):
-        pass
+        view_modes = {0: "single_page", 1: "double_page", 2: "scroll_page"}
+        button_id = self._button_group.id(button)
+        self._bridge.set_view_mode(view_modes[button_id])

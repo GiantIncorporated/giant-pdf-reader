@@ -49,8 +49,8 @@ export default function Reader(props: { scale: number, payload: ReaderProps | nu
                         ref={pageContainerRef}
                         style={{
                             position: "relative",
-                            width: props.payload?.width_pt ? props.payload.width_pt * scale : 1,
-                            height: props.payload?.height_pt ? props.payload.height_pt * scale : 1,
+                            width: props.payload?.width_pt ? props.payload.width_pt * scale : 1.2,
+                            height: props.payload?.height_pt ? props.payload.height_pt * scale : 1.2,
                         }}
                     >
                         <canvas
