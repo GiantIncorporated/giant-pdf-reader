@@ -1,4 +1,9 @@
 export interface ReaderProps {
+    type: string;
+    pages: PdfDoc[]
+}
+
+export interface PdfDoc {
     page_number: number,
     width_pt: number,
     height_pt: number,

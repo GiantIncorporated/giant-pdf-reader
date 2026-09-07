@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import './App.css'
 import {useWebChannel} from "./hooks/useWebChannel.ts";
 import Reader from "./features/reader";
-import type {ReaderProps} from "./types/reader.type.ts";
+import type {PdfDoc, ReaderProps} from "./types/reader.type.ts";
 
 function App() {
     const {bridge} = useWebChannel()
@@ -15,6 +15,33 @@ function App() {
 
         const onMessage = (msg: string) => {
             let pageData = JSON.parse(msg)
+            if (pageData.type === 'scroll_page') {
+                setPayload((prev) => {
+                        if (!prev) {
+                            return {
+                                type: pageData.type,
+                                pages: pageData.pages || []
+                            }
+                        }
+
+                        const newPages = [...(prev.pages || []), ...pageData.pages]
+                        const seen = new Set<number>()
+                        const deduped = newPages.filter((page:PdfDoc)=>{
+                            if (seen.has(page.page_number)) return false
+                            seen.add(page.page_number)
+                            return true
+                        })
+
+                        return {
+                            type: pageData.type,
+                            pages: deduped
+                        }
+
+                    }
+                )
+                return
+            }
+            console.log(`Received page data: ${pageData.pages}`)
             setPayload(pageData)
         }
         bridge.messageReceived.connect(onMessage)
