@@ -21,8 +21,10 @@ export default function Reader({ scale, payload }: IReader) {
     }
 
     // Use virtual scrolling for large PDFs (50+ pages)
-    if (currentPage.length > 3) {
-        return <VirtualScrollReader pages={currentPage} scale={scale} />
+    if (currentPage.length > 14) {
+        console.log(`Using virtual scrolling, ${payload.pages.length} `)
+        console.log('in reader payload page count', payload.chunk)
+        return <VirtualScrollReader payload={payload} scale={scale} />
     }
 
     // Normal rendering for small PDFs

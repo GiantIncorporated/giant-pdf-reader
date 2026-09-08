@@ -22,11 +22,13 @@ declare global {
 
         get_system_info(callback: (info: string) => void): void
         open_pdf_page(filepath: string, callback: (text: string) => void): void
-        fetch_next_page(callback: (text: string) => void): void
-        fetch_prev_page(callback: (text: string) => void): void
+        fetch_next_page(pageNumber:number): string
+        fetch_prev_page(pageNumber: number): string
 
         messageReceived: QWebChannelObjectSignal
         scaleChanged: QWebChannelNumberSignal
+        nextPage: QWebChannelObjectSignal
+        prevPage: QWebChannelObjectSignal
     }
 
     interface QWebChannelInstance {
