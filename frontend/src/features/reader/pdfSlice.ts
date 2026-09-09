@@ -1,22 +1,35 @@
-import {createSlice} from "@reduxjs/toolkit";
+import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
+import type {ReaderProps} from "../../types/reader.type.ts";
+
+
+interface PdfState {
+    pdfFile: ReaderProps
+}
 
 export const pdfSlice = createSlice({
     name: 'pdf',
     initialState: {
-        currentPage: 0,
-    },
+        pdfFile: {},
+    } as PdfState,
     reducers: {
-        nextPage: state => {
-            console.log(`Next page requested: ${state.currentPage + 1}`)
-            state.currentPage += 1;
+
+        savePdf: (state, action: PayloadAction<ReaderProps>) => {
+            state.pdfFile = action.payload;
         },
 
-        prevPage: state => {
-            console.log(`Prev page requested: ${state.currentPage - 1}`)
-            state.currentPage -= 1;
+        nextPage: (state) => {
+            if (state.pdfFile.currentPage < state.pdfFile.page_count) {
+                state.pdfFile.currentPage += 1;
+            }
+        },
+        prevPage: (state) => {
+            if (state.pdfFile.currentPage > 0) {
+                console.log(`Prev page: ${state.pdfFile.currentPage - 1}`);
+                state.pdfFile.currentPage -= 1;
+            }
         }
     }
 })
 
-export const {nextPage, prevPage} = pdfSlice.actions;
+export const {savePdf, nextPage, prevPage} = pdfSlice.actions;
 export default pdfSlice.reducer

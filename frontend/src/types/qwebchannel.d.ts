@@ -22,8 +22,8 @@ declare global {
 
         get_system_info(callback: (info: string) => void): void
         open_pdf_page(filepath: string, callback: (text: string) => void): void
-        fetch_next_page(pageNumber:number): string
-        fetch_prev_page(pageNumber: number): string
+        fetch_next_page(pageNumber:number): boolean
+        fetch_prev_page(pageNumber: number): boolean
 
         messageReceived: QWebChannelObjectSignal
         scaleChanged: QWebChannelNumberSignal

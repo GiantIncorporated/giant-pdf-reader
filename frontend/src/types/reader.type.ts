@@ -1,12 +1,15 @@
 export interface ReaderProps {
     type: string;
-    pages: PdfDoc[]
-    chunk?: number
-    total_chunks?: number
-    start_page?: number
-    end_page?: number
-    page_count?: number
-    parse_duration_ms?: number
+    currentPage: number;
+    fileName: string;
+    fileDirectory: string;
+    page_count: number;
+    chunk?: number;
+    total_chunks?: number;
+    start_page?: number;
+    end_page?: number;
+    parse_duration_ms?:number;
+    pages: PdfDoc[];
 }
 
 export interface PdfDoc {
