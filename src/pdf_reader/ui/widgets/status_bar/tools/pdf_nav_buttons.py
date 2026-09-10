@@ -7,8 +7,9 @@ from ui.widgets.buttons.button_with_icon import ButtonWithIcon
 
 _ICON_DIR = PACKAGE_ROOT / "assets" / "icons"
 
+
 class PdfNavButtons(QWidget):
-    def __init__(self,bridge:Bridge):
+    def __init__(self, bridge: Bridge):
         super().__init__()
 
         self._bridge = bridge
@@ -28,15 +29,10 @@ class PdfNavButtons(QWidget):
 
         self.setLayout(self._h_layout)
 
-
     @Slot()
     def on_next_page_clicked(self):
-        self._bridge.fetch_next_page()
-
+        self._bridge.nextPage.emit()
 
     @Slot()
     def on_prev_page_clicked(self):
-        self._bridge.fetch_prev_page()
-
-
-
+        self._bridge.prevPage.emit()

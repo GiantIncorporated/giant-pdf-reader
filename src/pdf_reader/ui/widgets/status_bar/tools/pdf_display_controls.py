@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QWidget, QSlider, QHBoxLayout, QButtonGroup, QToolButton
 
 from config import PACKAGE_ROOT
+from core.utils.logging import Logger
 from features.pdf_display.signals.bridge import Bridge
 from ui.widgets.buttons.button_with_icon import ButtonWithIcon
 
@@ -52,4 +53,5 @@ class PdfScaleSlider(QWidget):
     def _on_button_clicked(self, button: QToolButton):
         view_modes = {0: "single_page", 1: "double_page", 2: "scroll_page"}
         button_id = self._button_group.id(button)
+        Logger.debug(f"Setting view mode to {button_id}")
         self._bridge.set_view_mode(view_modes[button_id])

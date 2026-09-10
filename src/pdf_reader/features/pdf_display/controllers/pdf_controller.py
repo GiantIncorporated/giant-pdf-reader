@@ -36,6 +36,8 @@ class PdfController:
         cpu = cpu_count()
         doc = PdfRepository.open_pdf(file_path)
         PdfService.state['page_count'] = doc.page_count
+        PdfService.double_pages = PdfRepository.paginate_double(range(PdfService.state['page_count']))
+        PdfService.state['double_page_count'] = len(PdfService.double_pages)
         doc.close()
 
         PdfRenderWorker.run(
@@ -47,7 +49,7 @@ class PdfController:
         self._display_service.show_pdf_view(self._pdf_repository)
 
     def on_display_scroll_view(self):
-        self._display_service.display_strategy = ScrollPage(self._signal)
+        self._display_service.display_strategy = ScrollPage(self._signal, self._pdf_repository)
         self._display_service.show_pdf_view(self._pdf_repository)
 
     def on_display_single_page_view(self):
@@ -58,9 +60,11 @@ class PdfController:
         self._display_service.display_strategy = DoublePage(self._signal, self._pdf_repository)
         self._display_service.show_pdf_view(self._pdf_repository)
 
-    def fetch_next_page_handler(self):
+    def fetch_next_page_handler(self, page_number)->bool:
         Logger.debug(f"Fetching next page is the page count {json.dumps(PdfService.state)}")
-        self._display_service.next_page()
+        Logger.debug(f"Fetching next page {page_number}")
+        return self._display_service.next_page(page_number)
 
-    def fetch_prev_page_handler(self):
-        self._display_service.prev_page()
+    def fetch_prev_page_handler(self, page_number) -> bool:
+        Logger.debug(f"Fetching prev page {page_number}")
+        return self._display_service.prev_page(page_number)

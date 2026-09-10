@@ -11,7 +11,8 @@ TEXT_BLOCK = 0
 
 class PdfService:
 
-    state = {"page_count": 0, "current_page_num": 0}
+    state = {"page_count": 0, "current_page_num": 0, 'double_page_count': 0}
+    double_pages = []
 
     def __init__(self, pdf_repository):
         self._pdf_repository = pdf_repository

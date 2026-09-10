@@ -34,7 +34,7 @@ class PdfRenderService(PdfService):
             page = doc.load_page(page_number)
             spans = PdfRenderService.extract_text_spans(page)
             png_bytes, w, h = PdfRenderService.render_pixmap_without_text(page)
-            is_saved = pdf_repository.save_pdf(
+            pdf_repository.save_pdf(
                 page_number,
                 page.rect.width,
                 page.rect.height,
@@ -44,7 +44,5 @@ class PdfRenderService(PdfService):
                 [asdict(span) for span in spans],
                 page_count,
             )
-            if is_saved:
-                Logger.debug(f"Page {page_number} saved")
         doc.close()
 

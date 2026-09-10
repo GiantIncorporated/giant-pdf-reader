@@ -17,8 +17,8 @@ class DisplayService:
     def show_pdf_view(self, pdf_repository: PdfRepository):
         self._display_strategy.display(pdf_repository)
 
-    def prev_page(self):
-        self._display_strategy.prev_page()
+    def prev_page(self, page_number)->bool:
+        return self._display_strategy.prev_page(page_number)
 
-    def next_page(self):
-        self._display_strategy.next_page()
+    def next_page(self,page_number)->bool:
+        return self._display_strategy.next_page(page_number)

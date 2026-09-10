@@ -10,6 +10,8 @@ from features.pdf_display.controllers.pdf_controller import PdfController
 class Bridge(QObject):
     messageReceived = Signal(str)
     scaleChanged = Signal(int)
+    nextPage = Signal()
+    prevPage = Signal()
 
     def __init__(self):
         super().__init__()
@@ -33,24 +35,31 @@ class Bridge(QObject):
         Logger.info(f"Fetching text from page, {filepath}")
         self._pdf_controller.fetch_page_handler(filepath)
 
-    @Slot()
-    def fetch_next_page(self) -> None:
-        Logger.info(f"Fetching next page")
-        self._pdf_controller.fetch_next_page_handler()
+    @Slot(int, result=bool)
+    def fetch_next_page(self,page_number:int) -> bool:
+        Logger.info(f"Fetching next page {page_number}")
+        has_page = self._pdf_controller.fetch_next_page_handler(page_number)
+        if has_page:
+            return True
+        return False
 
-    @Slot()
-    def fetch_prev_page(self) -> None:
-        Logger.info(f"Fetching previous page")
-        self._pdf_controller.fetch_prev_page_handler()
+    @Slot(int,result=bool)
+    def fetch_prev_page(self, page_number:int) -> bool:
+        Logger.info(f"Fetching previous page {page_number}")
+        has_page = self._pdf_controller.fetch_prev_page_handler(page_number)
+        if has_page:
+            return True
+        return False
 
     @Slot()
     def set_view_mode(self, view_mode) -> None:
+        Logger.debug(f"Setting view mode to {view_mode}")
         match view_mode:
-            case 0:
+            case "single_page":
                 self._pdf_controller.on_display_single_page_view()
-            case 1:
+            case "double_page":
                 self._pdf_controller.on_display_double_page_view()
-            case 2:
+            case "scroll_page":
                 self._pdf_controller.on_display_scroll_view()
             case _:
                 self._pdf_controller.on_display_single_page_view()

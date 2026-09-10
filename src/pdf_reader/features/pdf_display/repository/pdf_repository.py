@@ -11,6 +11,10 @@ from core.utils.logging import Logger
 
 
 class PdfRepository:
+
+    file_path: str
+    file_name: str
+
     def __init__(self, cache: Cache):
         self._cache = cache
 
@@ -19,6 +23,8 @@ class PdfRepository:
         if not path:
             raise ValueError("Path cannot be empty")
         try:
+            PdfRepository.file_path = path
+            PdfRepository.file_name = path.split("/")[-1]
             return pymupdf.open(path)
         except pymupdf.FileNotFoundError:
             return None
@@ -60,18 +66,25 @@ class PdfRepository:
             Logger.error(f"Error loading page from pdf repository: {err}")
             return None
 
-    def load_double_page(self, page_number) -> None | list[PdfDoc]:
+    @staticmethod
+    def paginate_double(items, items_per_page=2):
+        pages = []
+        for i in range(0, len(items), items_per_page):
+            pages.append(items[i:i + items_per_page])
+        return pages
+
+    def load_double_page(self, page_number: tuple[int, int]) -> None | list[PdfDoc]:
         try:
             Logger.info("Loading page from pdf repository --start")
             pages = []
-            first_page = self._cache.get(page_number)
+            first_page = self._cache.get(page_number[0])
             if first_page is None:
                 return None
 
             first_pdf_doc = PdfRepository._get_pdf_doc(first_page)
             pages.append(first_pdf_doc)
 
-            second_page = self._cache.get(page_number + 1)
+            second_page = self._cache.get(page_number[1])
 
             if second_page is None:
                 return pages
@@ -79,6 +92,22 @@ class PdfRepository:
             second_pdf_doc = PdfRepository._get_pdf_doc(second_page)
             pages.append(second_pdf_doc)
 
+            return pages
+        except Exception as err:
+            Logger.error(f"Error loading page from pdf repository: {err}")
+            return None
+
+    def load_scroll_page(self, page_count ):
+        try:
+            Logger.info("Loading page from pdf repository --start")
+            pages = []
+            for page_number in range(page_count):
+                response = self._cache.get(page_number)
+                if not response:
+                    break
+                pdf_doc = PdfRepository._get_pdf_doc(response)
+                pages.append(pdf_doc)
+                Logger.debug(f"Loaded pdf page from repository {page_number}")
             return pages
         except Exception as err:
             Logger.error(f"Error loading page from pdf repository: {err}")
