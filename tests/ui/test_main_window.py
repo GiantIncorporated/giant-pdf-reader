@@ -1,5 +1,5 @@
 import pytest
-from core.signals.bridge import Bridge
+from features.pdf_display.signals import Bridge
 from pdf_reader.ui.main_window import MainWindow
 
 

@@ -3,7 +3,6 @@ export {}
 declare global {
     interface QWebChannelTransport {
         send(message: string): void
-
         onmessage: ((message: MessageEvent) => void) | null
     }
 
@@ -12,14 +11,24 @@ declare global {
         disconnect(handler: (value: string) => void): void
     }
 
+    interface QWebChannelNumberSignal {
+        connect(handler: (value: number) => void): void
+        disconnect(handler: (value: number) => void): void
+    }
+
+
     interface PdfReaderBridge {
         send_message(message: string, callback: (response: string) => void): void
+
         get_system_info(callback: (info: string) => void): void
         open_pdf_page(filepath: string, callback: (text: string) => void): void
-        fetch_next_page(callback: (text: string) => void): void
-        fetch_prev_page(callback: (text: string) => void): void
-        add(a: number, b: number, callback: (sum: number) => void): void
+        fetch_next_page(pageNumber:number): boolean
+        fetch_prev_page(pageNumber: number): boolean
+
         messageReceived: QWebChannelObjectSignal
+        scaleChanged: QWebChannelNumberSignal
+        nextPage: QWebChannelObjectSignal
+        prevPage: QWebChannelObjectSignal
     }
 
     interface QWebChannelInstance {

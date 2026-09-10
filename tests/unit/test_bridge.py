@@ -1,5 +1,5 @@
 import pytest
-import core.signals.bridge as bridge
+import features.pdf_display.signals.bridge as bridge
 
 
 class TestBridge:

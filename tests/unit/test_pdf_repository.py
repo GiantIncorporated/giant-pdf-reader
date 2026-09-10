@@ -4,10 +4,10 @@ import pytest
 from diskcache import Cache
 from pymupdf import Document
 
-from pdf_reader.core.models.pdf.pdf_doc import PdfDoc
+from features.pdf_display.models.pdf.pdf_doc import PdfDoc
 from pdf_reader.core.caches.pdf_cache import PdfCache
-from pdf_reader.core.repository.pdf_repository import PdfRepository
-import pymupdf as PyMuPDF
+from features.pdf_display.repository.pdf_repository import PdfRepository
+
 
 @pytest.fixture
 def cache(tmp_path):

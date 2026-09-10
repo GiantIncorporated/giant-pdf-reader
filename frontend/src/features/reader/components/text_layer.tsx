@@ -34,7 +34,7 @@ export default function TextLayer({ spans, scale }: TextLayerProps) {
                                 className="pdf-text-char"
                                 data-span-index={spanIndex}
                                 data-char-index={charIndex}
-                                style={{ display: "inline-block", opacity: 0 }}
+                                style={{ display: "inline-block", opacity: 1 }}
                             >
                                 {char === " " ? "\u00A0" : char}
                             </span>
